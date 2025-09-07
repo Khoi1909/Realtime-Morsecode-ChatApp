@@ -8,12 +8,25 @@ const startServer = async (): Promise<void> => {
     console.log('🚀 Console: Starting Morse Code Chat Server...');
     logger.info('🚀 Logger: Starting Morse Code Chat Server...');
     
+    console.log('Creating server instance...');
     const server = new Server();
+    
+    console.log('Starting server...');
     await server.start();
+    
+    console.log('✅ Server startup completed successfully!');
     
   } catch (error) {
     console.error('❌ Console: Failed to start server:', error);
     logger.error('❌ Logger: Failed to start server:', error);
+    
+    // Log the full error details
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     process.exit(1);
   }
 };
