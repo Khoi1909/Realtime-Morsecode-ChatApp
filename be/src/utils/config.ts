@@ -2,13 +2,42 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { EnvConfig } from '../types';
 
-// Log current working directory and paths for debugging
-console.log('Current working directory:', process.cwd());
-console.log('__dirname:', __dirname);
-console.log('Attempting to load .env from:', path.resolve(__dirname, '../../.env'));
+// Only try to load .env in development
+if (process.env.NODE_ENV !== 'production') {
+  // Log current working directory and paths for debugging
+  console.log('Current working directory:', process.cwd());
+  console.log('__dirname:', __dirname);
 
-// Load environment variables from root directory
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+  // Try multiple .env file locations
+  const envPaths = [
+    path.resolve(__dirname, '../../.env'),           // /app/be/.env
+    path.resolve(__dirname, '../../../.env'),        // /app/.env
+    path.resolve(process.cwd(), '.env'),             // {cwd}/.env
+    path.resolve(process.cwd(), '../.env'),          // {cwd}/../.env
+  ];
+
+  console.log('Trying .env paths:', envPaths);
+
+  // Try to load .env from multiple locations
+  let envLoaded = false;
+  for (const envPath of envPaths) {
+    console.log(`Attempting to load .env from: ${envPath}`);
+    const result = dotenv.config({ path: envPath });
+    if (!result.error) {
+      console.log(`✅ Successfully loaded .env from: ${envPath}`);
+      envLoaded = true;
+      break;
+    } else {
+      console.log(`❌ Failed to load from ${envPath}:`, result.error.message);
+    }
+  }
+
+  if (!envLoaded) {
+    console.log('⚠️  No .env file loaded - relying on system environment variables');
+  }
+} else {
+  console.log('Production mode - skipping .env file, using Railway environment variables');
+}
 
 const config: EnvConfig = {
   NODE_ENV: process.env.NODE_ENV || 'development',
