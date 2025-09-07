@@ -111,12 +111,21 @@ class Server {
   private initializeRoutes(): void {
     // Root endpoint for basic connectivity test
     this.app.get('/', (_req: Request, res: Response) => {
+      console.log('✅ Root endpoint called');
       res.status(200).send('Morse Code Chat API is running!');
     });
 
-    // Ultra-simple health check endpoint
+    // Ultra-simple health check endpoint with logging
     this.app.get('/health', (_req: Request, res: Response) => {
-      res.status(200).send('OK');
+      console.log('🏥 Health check endpoint called');
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('OK');
+    });
+
+    // Alternative health check
+    this.app.get('/healthz', (_req: Request, res: Response) => {
+      console.log('🏥 Healthz endpoint called');
+      res.status(200).send('healthy');
     });
 
     // More detailed health check

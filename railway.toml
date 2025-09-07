@@ -1,16 +1,12 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm ci && npm run build"
-watchPatterns = ["be/**"]
+buildCommand = "npm run build"
 
 [deploy]
 startCommand = "npm start"
-healthcheckPath = "/health"
-healthcheckTimeout = 300
+# healthcheckPath = "/health"
+# healthcheckTimeout = 300
 restartPolicyType = "always"
-workingDirectory = "be"
 
 [env]
 NODE_ENV = "production"
-
-# Force redeploy to pick up environment variables
