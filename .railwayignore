@@ -1,0 +1,3 @@
+Dockerfile*
+*.dockerfile
+docker-compose.yml
