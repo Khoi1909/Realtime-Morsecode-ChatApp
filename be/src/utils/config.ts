@@ -2,6 +2,11 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { EnvConfig } from '../types';
 
+// Log current working directory and paths for debugging
+console.log('Current working directory:', process.cwd());
+console.log('__dirname:', __dirname);
+console.log('Attempting to load .env from:', path.resolve(__dirname, '../../.env'));
+
 // Load environment variables from root directory
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 

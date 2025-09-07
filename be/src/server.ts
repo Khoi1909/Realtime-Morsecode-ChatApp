@@ -123,14 +123,25 @@ class Server {
 
     // Environment check endpoint (for debugging)
     this.app.get('/env-check', (_req: Request, res: Response) => {
+      const allEnvVars = Object.keys(process.env).sort();
+      const supabaseVars = allEnvVars.filter(key => key.startsWith('SUPABASE'));
+      const jwtVars = allEnvVars.filter(key => key.includes('JWT'));
+      
       const envStatus = {
         NODE_ENV: process.env.NODE_ENV || 'undefined',
         PORT: process.env.PORT || 'undefined',
-        SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'MISSING',
-        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
-        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING',
-        JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'MISSING',
-        FRONTEND_URL: process.env.FRONTEND_URL || 'undefined'
+        totalEnvVars: allEnvVars.length,
+        allEnvVarNames: allEnvVars,
+        supabaseVars: supabaseVars,
+        jwtVars: jwtVars,
+        specificChecks: {
+          SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'MISSING',
+          SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
+          SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING',
+          JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'MISSING',
+          FRONTEND_URL: process.env.FRONTEND_URL || 'undefined',
+          DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'MISSING'
+        }
       };
       
       res.status(200).json(envStatus);
