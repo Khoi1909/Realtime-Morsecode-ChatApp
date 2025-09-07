@@ -103,13 +103,13 @@ class Server {
   }
 
   private initializeRoutes(): void {
-    // Health check endpoint
+    // Health check endpoint - simple and dependency-free
     this.app.get('/health', (_req: Request, res: Response) => {
-      res.json(ApiResponseUtil.success({ 
+      res.status(200).json({ 
         status: 'healthy', 
         timestamp: new Date().toISOString(),
         version: '1.0.0'
-      }));
+      });
     });
 
     // API routes

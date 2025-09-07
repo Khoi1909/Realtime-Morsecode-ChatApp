@@ -5,7 +5,15 @@ buildCommand = "npm run build"
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
 
 [env]
 PORT = "6969"
 NODE_ENV = "production"
+# Add placeholder values for required environment variables
+SUPABASE_URL = "https://placeholder.supabase.co"
+SUPABASE_ANON_KEY = "placeholder-key"
+SUPABASE_SERVICE_ROLE_KEY = "placeholder-service-key"
+JWT_SECRET = "placeholder-jwt-secret-change-in-production"
+FRONTEND_URL = "http://localhost:3000"
