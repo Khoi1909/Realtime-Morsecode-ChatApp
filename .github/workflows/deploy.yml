@@ -1,0 +1,106 @@
+name: Deploy Morse Code Chat Backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: be/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd be
+        npm ci
+    
+    - name: Run linting
+      run: |
+        cd be
+        npm run lint
+    
+    - name: Build TypeScript
+      run: |
+        cd be
+        npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: be/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd be
+        npm ci
+    
+    - name: Build application
+      run: |
+        cd be
+        npm run build
+    
+    # Deploy to Railway
+    - name: Deploy to Railway
+      if: ${{ vars.DEPLOY_TARGET == 'railway' }}
+      uses: railway-deployment-action@v2
+      with:
+        railway-token: ${{ secrets.RAILWAY_TOKEN }}
+        service: morse-chat-backend
+    
+    # Deploy to Render
+    - name: Deploy to Render
+      if: ${{ vars.DEPLOY_TARGET == 'render' }}
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+    
+    # Deploy to Vercel
+    - name: Deploy to Vercel
+      if: ${{ vars.DEPLOY_TARGET == 'vercel' }}
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: be
+    
+    # Deploy to DigitalOcean App Platform
+    - name: Deploy to DigitalOcean App Platform
+      if: ${{ vars.DEPLOY_TARGET == 'digitalocean' }}
+      uses: digitalocean/app_action@v1.1.5
+      with:
+        app_name: morse-chat-backend
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    
+    # Deploy to Heroku
+    - name: Deploy to Heroku
+      if: ${{ vars.DEPLOY_TARGET == 'heroku' }}
+      uses: akhileshns/heroku-deploy@v3.13.15
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+        appdir: "be"
+        procfile: "web: npm start"
