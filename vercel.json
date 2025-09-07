@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "name": "morse-chat-backend",
+  "builds": [
+    {
+      "src": "be/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "be/src/index.ts"
+    },
+    {
+      "src": "/socket.io/(.*)",
+      "dest": "be/src/index.ts"
+    },
+    {
+      "src": "/health",
+      "dest": "be/src/index.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "be/src/index.ts": {
+      "maxDuration": 30
+    }
+  }
+}
