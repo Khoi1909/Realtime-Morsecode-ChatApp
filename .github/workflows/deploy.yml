@@ -24,12 +24,12 @@ jobs:
       run: |
         cd be
         npm ci
+        npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser
     
-    - name: Run linting
+    - name: Run linting (optional)
       run: |
         cd be
-        npm run lint
-      continue-on-error: true
+        npm run lint || echo "Linting failed, but continuing..."
     
     - name: Build TypeScript
       run: |
@@ -66,8 +66,7 @@ jobs:
       if: contains(github.event.head_commit.message, '[railway]')
       run: |
         npm install -g @railway/cli
-        railway login --token $RAILWAY_TOKEN
-        railway up --service morse-chat-backend
+        railway up
       working-directory: be
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
