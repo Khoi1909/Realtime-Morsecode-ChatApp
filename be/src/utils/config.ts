@@ -24,6 +24,12 @@ const config: EnvConfig = {
   TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
 };
 
+// Log all environment variables for debugging
+console.log('=== ENVIRONMENT VARIABLES DEBUG ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('Available env vars:', Object.keys(process.env).filter(key => key.startsWith('SUPABASE') || key.includes('JWT')));
+
 // Validate required environment variables
 const requiredVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missingVars = requiredVars.filter(varName => !config[varName as keyof EnvConfig]);

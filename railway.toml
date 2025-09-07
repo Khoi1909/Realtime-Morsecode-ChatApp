@@ -7,3 +7,5 @@ startCommand = "npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "always"
+
+# Force redeploy to pick up environment variables
