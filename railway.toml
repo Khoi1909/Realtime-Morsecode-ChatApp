@@ -1,13 +1,10 @@
 [build]
-builder = "nixpacks"
 buildCommand = "cd be && npm ci && npm run build"
 
 [deploy]
 startCommand = "cd be && npm start"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
-restartPolicyType = "always"
 
 [env]
-PORT = { default = "6969" }
-NODE_ENV = { default = "production" }
+PORT = "6969"
+NODE_ENV = "production"
