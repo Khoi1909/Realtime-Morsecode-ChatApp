@@ -41,7 +41,13 @@ class Server {
         credentials: true,
       },
     });
+    
+    // Initialize Supabase service (will handle missing env vars gracefully)
     this.supabaseService = SupabaseService.getInstance();
+    
+    if (!this.supabaseService.isReady()) {
+      logger.warn('⚠️  Server starting without database connection - some features will be disabled');
+    }
 
     this.initializeMiddleware();
     this.initializeRoutes();
@@ -105,11 +111,14 @@ class Server {
   private initializeRoutes(): void {
     // Health check endpoint - simple and dependency-free
     this.app.get('/health', (_req: Request, res: Response) => {
-      res.status(200).json({ 
+      const healthStatus = {
         status: 'healthy', 
         timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      });
+        version: '1.0.0',
+        database: this.supabaseService.isReady() ? 'connected' : 'disconnected'
+      };
+      
+      res.status(200).json(healthStatus);
     });
 
     // API routes
