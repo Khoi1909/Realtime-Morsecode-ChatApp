@@ -42,7 +42,7 @@ if (process.env.NODE_ENV !== 'production') {
 const config: EnvConfig = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '3001', 10),
-  HOST: process.env.HOST || 'localhost',
+  HOST: process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'),
   SUPABASE_URL: process.env.SUPABASE_URL || '',
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',

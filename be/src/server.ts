@@ -184,6 +184,9 @@ class Server {
 
       // Start server regardless of database status
       this.httpServer.listen(config.PORT, config.HOST, () => {
+        console.log(`🚀 Server successfully started!`);
+        console.log(`📍 Binding to: ${config.HOST}:${config.PORT}`);
+        console.log(`🌐 Server accessible at: http://${config.HOST}:${config.PORT}`);
         logger.info(`🚀 Server running on http://${config.HOST}:${config.PORT}`);
         logger.info(`📡 Socket.IO server ready for connections`);
         logger.info(`🌍 Environment: ${config.NODE_ENV}`);
@@ -193,6 +196,13 @@ class Server {
         } else {
           logger.warn(`🗄️  Database: Disconnected (some features disabled)`);
         }
+      });
+
+      // Add error handling for server startup
+      this.httpServer.on('error', (error: any) => {
+        console.error('❌ Server failed to start:', error);
+        logger.error('Server startup error:', error);
+        throw error;
       });
 
       // Graceful shutdown handling
