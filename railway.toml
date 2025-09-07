@@ -7,9 +7,3 @@ startCommand = "npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "always"
-
-[env]
-PORT = "6969"
-NODE_ENV = "production"
-# Environment variables are configured in Railway dashboard
-# SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET will be injected by Railway

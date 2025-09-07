@@ -121,6 +121,21 @@ class Server {
       res.status(200).json(healthStatus);
     });
 
+    // Environment check endpoint (for debugging)
+    this.app.get('/env-check', (_req: Request, res: Response) => {
+      const envStatus = {
+        NODE_ENV: process.env.NODE_ENV || 'undefined',
+        PORT: process.env.PORT || 'undefined',
+        SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'MISSING',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING',
+        JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'MISSING',
+        FRONTEND_URL: process.env.FRONTEND_URL || 'undefined'
+      };
+      
+      res.status(200).json(envStatus);
+    });
+
     // API routes
     this.app.use('/api/auth', authRoutes);
     this.app.use('/api/users', userRoutes);
@@ -148,18 +163,25 @@ class Server {
 
   public async start(): Promise<void> {
     try {
-      // Test database connection
+      // Test database connection (but don't fail if it's not available)
       const dbConnected = await this.supabaseService.testConnection();
       if (!dbConnected) {
-        throw new Error('Failed to connect to database');
+        logger.warn('⚠️  Database connection failed - server will start without database features');
+      } else {
+        logger.info('✅ Database connection successful');
       }
 
-      // Start server
+      // Start server regardless of database status
       this.httpServer.listen(config.PORT, config.HOST, () => {
         logger.info(`🚀 Server running on http://${config.HOST}:${config.PORT}`);
         logger.info(`📡 Socket.IO server ready for connections`);
         logger.info(`🌍 Environment: ${config.NODE_ENV}`);
         logger.info(`🔗 CORS origin: ${config.CORS_ORIGIN}`);
+        if (dbConnected) {
+          logger.info(`🗄️  Database: Connected`);
+        } else {
+          logger.warn(`🗄️  Database: Disconnected (some features disabled)`);
+        }
       });
 
       // Graceful shutdown handling

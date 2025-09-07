@@ -28,6 +28,13 @@ const config: EnvConfig = {
 const requiredVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missingVars = requiredVars.filter(varName => !config[varName as keyof EnvConfig]);
 
+// Log environment variable status for debugging
+console.log('Environment variables status:');
+requiredVars.forEach(varName => {
+  const value = process.env[varName];
+  console.log(`  ${varName}: ${value ? 'SET' : 'MISSING'}`);
+});
+
 if (missingVars.length > 0 && config.NODE_ENV === 'production') {
   console.warn(`Warning: Missing environment variables: ${missingVars.join(', ')}`);
   console.warn('Server will start but database functionality may not work properly');
