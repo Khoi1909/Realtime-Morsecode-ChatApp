@@ -2,8 +2,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { EnvConfig } from '../types';
 
+// Log the detected NODE_ENV first
+console.log('Detected NODE_ENV:', process.env.NODE_ENV);
+
 // Only try to load .env in development
 if (process.env.NODE_ENV !== 'production') {
+  console.log('Development mode detected - attempting to load .env file');
   // Log current working directory and paths for debugging
   console.log('Current working directory:', process.cwd());
   console.log('__dirname:', __dirname);

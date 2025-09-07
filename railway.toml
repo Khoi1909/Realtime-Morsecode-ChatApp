@@ -8,4 +8,7 @@ healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "always"
 
+[env]
+NODE_ENV = "production"
+
 # Force redeploy to pick up environment variables
