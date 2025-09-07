@@ -1,0 +1,27 @@
+{
+  "name": "morse-chat-backend",
+  "services": [
+    {
+      "type": "web",
+      "name": "api",
+      "env": "node",
+      "plan": "starter",
+      "buildCommand": "cd be && npm ci && npm run build",
+      "startCommand": "cd be && npm start",
+      "envVars": [
+        {
+          "key": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "key": "PORT",
+          "scope": "RUN_TIME",
+          "value": "6969"
+        }
+      ],
+      "healthcheck": {
+        "path": "/health"
+      }
+    }
+  ]
+}
