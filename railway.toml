@@ -1,0 +1,23 @@
+# Railway deployment configuration
+name: morse-chat-backend
+
+# Build configuration
+build:
+  builder: dockerfile
+  dockerfilePath: Dockerfile
+
+# Service configuration
+deploy:
+  startCommand: npm start
+  restartPolicyType: always
+
+# Environment variables (set these in Railway dashboard)
+variables:
+  NODE_ENV: production
+  PORT: ${{ PORT }}
+  
+# Health check
+healthcheck:
+  path: /health
+  timeout: 10
+  interval: 30
