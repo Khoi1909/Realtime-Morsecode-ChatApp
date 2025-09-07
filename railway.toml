@@ -1,12 +1,14 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
+buildCommand = "npm ci && npm run build"
+watchPatterns = ["be/**"]
 
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "always"
+workingDirectory = "be"
 
 [env]
 NODE_ENV = "production"

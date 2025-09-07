@@ -6,6 +6,10 @@ import logger from './utils/logger';
 const startServer = async (): Promise<void> => {
   try {
     console.log('🚀 Console: Starting Morse Code Chat Server...');
+    console.log('📂 Working directory:', process.cwd());
+    console.log('📄 __filename:', __filename);
+    console.log('📁 __dirname:', __dirname);
+    
     logger.info('🚀 Logger: Starting Morse Code Chat Server...');
     
     console.log('Creating server instance...');
