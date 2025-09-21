@@ -1,40 +1,171 @@
-version: '3.8'
-
 services:
-  backend:
-    build: 
-      context: ./be
-      dockerfile: Dockerfile
-    ports:
-      - "6969:6969"
+  # Kong Database (PostgreSQL)
+  kong-database:
+    image: postgres:13
+    container_name: kong-database
     environment:
-      - NODE_ENV=production
-      - PORT=6969
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
-      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kongpass
+      POSTGRES_DB: kong
     volumes:
-      - ./be/logs:/app/logs
-    restart: unless-stopped
+      - kong_data:/var/lib/postgresql/data
+    networks:
+      - morse-net
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:6969/health"]
+      test: ["CMD-SHELL", "pg_isready -U kong"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kong Migration (runs once)
+  kong-migration:
+    image: kong:3.4
+    container_name: kong-migration
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    networks:
+      - morse-net
+    restart: "no"
+
+  # Kong API Gateway
+  kong:
+    image: kong:3.4
+    container_name: kong-gateway
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+      
+      # Kong Configuration
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      
+      # CORS Configuration
+      KONG_UNTRUSTED_LUA_RESTY_WAF: "off"
+      KONG_UNTRUSTED_LUA_SANDBOX_REQUIRES: "off"
+      
+    ports:
+      - "2004:8000"  # Kong Proxy (Gateway)
+      - "8001:8001"  # Kong Admin API
+    depends_on:
+      kong-migration:
+        condition: service_completed_successfully
+    networks:
+      - morse-net
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # Konga (Kong Admin UI)
+  konga:
+    image: pantsel/konga:latest
+    container_name: konga
+    environment:
+      NODE_ENV: production
+    ports:
+      - "1337:1337"
+    depends_on:
+      - kong
+    networks:
+      - morse-net
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: auth-service
+    environment:
+      NODE_ENV: production
+      AUTH_SERVICE_PORT: 3001
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE_TIME: 7d
+      JWT_REFRESH_EXPIRE_TIME: 30d
+    networks:
+      - morse-net
+    depends_on:
+      - kong
+
+  # Morse Service
+  morse-service:
+    build:
+      context: .
+      dockerfile: services/morse-service/Dockerfile
+    container_name: morse-service
+    environment:
+      NODE_ENV: production
+      PORT: 3007
+      MORSE_SERVICE_PORT: 3007
+      MORSE_SERVICE_URL: http://morse-service:3007
+      LOG_LEVEL: info
+    networks:
+      - morse-net
+    depends_on:
+      - kong
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3007/morse/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
 
-  # Optional: Redis for session storage and caching
-  redis:
-    image: redis:7-alpine
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
     ports:
-      - "6379:6379"
+      - "9090:9090"
     volumes:
-      - redis_data:/data
-    restart: unless-stopped
-    command: redis-server --appendonly yes
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - morse-net
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - morse-net
+    depends_on:
+      - prometheus
 
 volumes:
-  redis_data:
+  kong_data:
+  grafana-storage:
+
+networks:
+  morse-net:
+    driver: bridge
