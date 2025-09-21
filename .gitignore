@@ -5,7 +5,92 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+docker*
+Docker*
+Postman
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+!.env.template
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
 
+# Kong Environment Files
+kong/.env
+kong/env.local
+kong/env.production
+
+# Service Environment Files
+services/*/env.*
+services/*/.env*
+
+# Supabase Secrets
+supabase/.env
+supabase/.env.local
+supabase/.env.production
+
+# JWT Secrets
+jwt-secret.txt
+jwt-secret.key
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Database Credentials
+database-credentials.txt
+db-secrets.txt
+
+# API Keys & Tokens
+api-keys.txt
+tokens.txt
+secrets.txt
+credentials.txt
+
+# Turnstile Keys
+turnstile-secret.txt
+turnstile-keys.txt
+
+# Docker Secrets
+docker-secrets/
+secrets/
+
+# Configuration Files with Secrets
+config/secrets.json
+config/production.json
+config/staging.json
+config/local.json
+
+# Log Files (may contain sensitive data)
+logs/
+*.log
+*.log.*
+
+# Backup Files
+*.backup
+*.bak
+*.tmp
+
+# IDE Files (may contain sensitive data)
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Test Files with Secrets
+test-secrets/
+test-credentials/
+*.test.env
 # Runtime data
 pids
 *.pid
